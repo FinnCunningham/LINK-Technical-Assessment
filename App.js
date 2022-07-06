@@ -40,13 +40,11 @@ const stack = createStackNavigator();
 const store = createStore(ReduxReducer);
 
 export default function App() {
-  const [page, setPage] = useState("Login");
-
   return (
     <PaperProvider theme={theme =='dark' ? darkTheme : lightTheme}>
       <ReduxProvider store={store}>
         <NavigationContainer>
-          <Header page={page}/>
+          <Header/>
           <StatusBar hidden/>
           <stack.Navigator screenOptions={{ headerShown: false }}>
             <stack.Screen name="login" children={()=> <Login/>} />

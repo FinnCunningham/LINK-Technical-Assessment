@@ -2,25 +2,29 @@ import React, { useEffect, useState } from 'react';
 import { View, Image, FlatList, StyleSheet } from 'react-native';
 import { connect } from 'react-redux';
 import { useTheme, Paragraph, Button} from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
-import { getProfile, getProfileImage, getCountries } from '../controllers/Api';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { getProfile, getProfileImage, getCountries, setNewImage } from '../controllers/Api';
+import { bindActionCreators } from 'redux';
+import { setPage } from '../controllers/ReduxAction';
+import { launchImageLibrary } from 'react-native-image-picker';
 
-const Item = ({ dialCode, flagCode, isoCode, name }) => (
-    <View style={{flex: 1, flexDirection: "row", justifyContent: "space-evenly"}}>
-        <Paragraph style={style.item}>{dialCode}</Paragraph>
-        <Paragraph style={style.item}>{flagCode}</Paragraph>
-        <Paragraph style={style.item}>{isoCode}</Paragraph>
-        <Paragraph style={style.item}>{name}</Paragraph>
-    </View>
-  );
+const openGallery = (setPickerResponse) => {
+    const options = {
+        selectionLimit: 1,
+        mediaType: 'photo',
+        includeBase64: false,
+    };
+    launchImageLibrary(options, setPickerResponse);
+}
 
-const Homepage = ({token}) => {
+const Homepage = ({token, setPage}) => {
     const { colors } = useTheme();
     const [profile, setProfile] = useState({});
     const [profileImg, setProfileImg] = useState();
-    // const [countries, setCountries] = useState();
-    console.log(token)
+    // console.log(token)
     const navigation = useNavigation();
+    const [pickerResponse, setPickerResponse] = useState(null);
+
     if(!token){
         navigation.navigate("login")
     }
@@ -29,13 +33,21 @@ const Homepage = ({token}) => {
         getProfileImage(setProfileImg);
         
     }, [])
-    useEffect(()=>{
-        console.log(profile)
-    }, [profile])
+    // useEffect(()=>{
+    //     console.log(profile)
+    // }, [profile])
 
-    // const renderItem = ({ item }) => (
-    //     <Item name={item.name} dialCode={item.dialCode} flagCode={item.flagCode} isoCode={item.isoCode}/>
-    // );
+    useEffect(()=>{
+        if(pickerResponse){
+            setNewImage(token, pickerResponse, setProfileImg)
+            setPickerResponse("");
+        }
+    }, [pickerResponse])
+
+    useFocusEffect(()=>{
+        setPage("Homepage")
+
+    });
     
     return(
         <View style={{flex: 1, backgroundColor: colors.background}}>
@@ -43,24 +55,23 @@ const Homepage = ({token}) => {
             <View style={{alignItems: "center"}}>
                 {profileImg ? 
                 <View>
-                    <Image source={{uri: 'file://' + profileImg}} style={{width: 100, height: 100, resizeMode: "contain"}}/>
+                    <Image source={{uri: 'file://' + profileImg}} style={{width: 100, height: 100, resizeMode: "contain", borderRadius: 10}}/>
                 </View> : <></>}
+                <Button onPress={()=>{
+                    openGallery(setPickerResponse);
+                }}>Change Profile Image</Button>
+                {/* { pickerResponse ? <Image source={{uri: 'file://' + pickerResponse.assets[0].uri}} style={{width: 100, height: 100, resizeMode: "contain", borderRadius: 10}}/>
+                : <></>} */}
+
                 {profile ? 
                     <View>
-                        <Paragraph>{profile.displayName}</Paragraph>
+                        <Paragraph style={{fontWeight: "bold", textAlign: "center"}}>{profile.firstName} {profile.lastName}</Paragraph>
+                        <Paragraph style={{ textAlign: "center"}}>{profile.displayName}</Paragraph>
                         <Paragraph>{profile.emailAddress}</Paragraph>
-                        <Paragraph>{profile.firstName} {profile.lastName}</Paragraph>
                     </View> : <></>}
                 <View style={{flexDirection: "row"}}>
                     <Button onPress={() => {navigation.navigate("contact")}}>Contact Details</Button>
-                    {/* <Button onPress={()=>{getCountries(setCountries);}}>View Countries</Button> */}
                 </View>
-                {/* {countries ? <FlatList
-                    data={countries}
-                    renderItem={renderItem}
-                    keyExtractor={(item, index) => index}
-                /> : <></>} */}
-                
             </View>
         </View>
     )
@@ -71,10 +82,16 @@ const mapStateToProps = (state) => {
     return { token }
   };
 
+const mapDispatchToProps = dispatch => (
+    bindActionCreators({
+        setPage,
+    }, dispatch)
+);
+
   const style = StyleSheet.create({
     item:{
         width: 100
     }
   })
 
-export default connect(mapStateToProps)(Homepage);
+export default connect(mapStateToProps, mapDispatchToProps)(Homepage);

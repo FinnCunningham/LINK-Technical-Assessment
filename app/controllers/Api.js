@@ -5,8 +5,8 @@ const fetchFromAPI = (endUrl, data, callback) => {
     let url = baseURL + endUrl;
     fetch(url, data)
     .then(response => {
-        console.log(response.statusText)
-        if(response.statusCode == 418){
+        console.log(response.status)
+        if(response.status == 418){
             return {"error": response.status}
         }
         if(response.status > 400 && response.status < 600){
@@ -24,9 +24,8 @@ const fetchFromAPI = (endUrl, data, callback) => {
     .then((data) => {
         // console.log(data)
         callback(data)})
-    .catch((error, statusCode) => {
+    .catch((error) => {
         console.log(error)
-        console.log(statusCode)
     })
 
 }
@@ -89,35 +88,69 @@ const getContacts = (token, setContacts) => {
     fetchFromAPI("/contacts?name=user3@intrinsicgrouplimited.com", data, callback)
 }
 
-const addContact = (token, bodyData) => {
+const addNewContact = (token, bodyData) => {
     let data = {
         method: 'POST',
         body: JSON.stringify({
             "company": bodyData.company,
             "contactName": bodyData.contactName,
-            "phoneNumbers": bodyData.phoneNumbers
-                // {
-                // "areaCode": "",
-                // "category": "HOME",
-                // "countryCode": "",
-                // "extension": "",
-                // "id": "",
-                // "number": ""
-                // }
-            ,
+            "phoneNumbers": bodyData.phoneNumbers,
             "primaryEmailAddress": bodyData.primaryEmailAddress
         }),
         headers: {
           // 'Accept':       'application/json',
           "accept": "*/*",
+          "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         }
       }
     const callback = (data) => {
+        console.log("CALLBACK")
         console.log(data);
         // setContacts(data);
     }
     fetchFromAPI("/contacts?name=user3@intrinsicgrouplimited.com", data, callback)
+}
+
+const setNewImage = (token, image, setProfileImg) => {
+    let url = baseURL + `/profile/profileImage?name=user3@intrinsicgrouplimited.com`;
+    RNFetchBlob.fetch('POST', url, {
+        "accept": "*/*",
+        "Content-Type": "multipart/form-data",
+        "Authorization": `Bearer ${token}`
+      }, JSON.stringify({file: image.assets[0].uri}))
+    // when response status code is 200
+    .then((res) => {
+        // the conversion is done in native code
+        console.log(res)
+        console.log('The file saved to ', res.path())
+        setProfileImg(res.path())
+    })
+    // Status code is not 200
+    .catch((errorMessage, statusCode) => {
+        console.log(errorMessage)
+        // error handling
+    })
+
+    // console.log(image)
+
+    // let data = {
+    //     method: 'POST',
+    //     body: JSON.stringify({
+    //         file: image.assets[0]
+    //     }),
+    //     headers: {
+    //       "accept": "*/*",
+    //       "Content-Type": "multipart/form-data",
+    //       "Authorization": `Bearer ${token}`
+    //     }
+    //   }
+    // const callback = (data) => {
+    //     console.log("CALLBACK")
+    //     console.log(data);
+    //     // setContacts(data);
+    // }
+    // fetchFromAPI("/profile/profileImage?name=user3@intrinsicgrouplimited.com", data, callback)
 }
 
 const getCountries = (setCountries) => {
@@ -154,4 +187,5 @@ const getProfileImage = (setProfileImg, id=3) => {
     })
 }
 
-export {loginAuth, getProfile, getProfileImage, getCountries, getContacts};
+export {loginAuth, getProfile, getProfileImage, getCountries, getContacts, addNewContact,
+    setNewImage};

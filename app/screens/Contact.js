@@ -2,41 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { View, Image, FlatList, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import { connect } from 'react-redux';
 import { useTheme, Paragraph, Button, TextInput} from 'react-native-paper';
+import { bindActionCreators } from 'redux';
 import { useNavigation } from '@react-navigation/native';
-import { getContacts, getCountries } from '../controllers/Api';
+import { getContacts, addNewContact } from '../controllers/Api';
+import CountryDisplay from '../components/CountryDisplay';
+import ContactsDisplay from '../components/ContactsDisplay';
+import { setPage } from '../controllers/ReduxAction';
 
-const Item = ({ dialCode, flagCode, isoCode, name, setSelectedCountry, selectedPhoneIndex, selectedCountry }) => (
-    <TouchableOpacity onPress={()=>{
-        let temp = [...selectedCountry];
-        temp[selectedPhoneIndex] = {dialCode: dialCode, flagCode: flagCode, isoCode: isoCode, name: name}
-        setSelectedCountry(temp)
-        }}>
-        <View style={{flex: 1, flexDirection: "row", justifyContent: "space-evenly"}}>
-            <Paragraph style={style.item}>{dialCode}</Paragraph>
-            <Paragraph style={style.item}>{flagCode}</Paragraph>
-            <Paragraph style={style.item}>{isoCode}</Paragraph>
-            <Paragraph style={style.item}>{name}</Paragraph>
-        </View>
-    </TouchableOpacity>
-
-  );
-
-const Contact = ({token}) => {
+const Contact = ({token, setPage}) => {
     const { colors } = useTheme();
     const [contacts, setContacts] = useState();
     const [addContact, setAddContact] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
-    const [countries, setCountries] = useState();
     const [selectedCountry, setSelectedCountry] = useState([]);
     const [selectedPhoneIndex, setSelectedPhoneIndex] = useState();
-    const testDropDownValues = [
-        {
-           "dialCode":"+93",
-           "flagCode":"🇦🇫",
-           "isoCode":"AF",
-           "name":"Afghanistan"
-        },
-    ]
+    const navigation = useNavigation();
+
     const [newContactDetails, setNewContactDetails] = useState({
         company: "",
         contactName: "",
@@ -54,50 +35,42 @@ const Contact = ({token}) => {
     })
     useEffect(()=>{
         getContacts( token, setContacts)
+        setPage("Contact");
     }, [])
-    useEffect(()=>{
-        getCountries(setCountries);
-    }, [modalVisible])
-
-    const renderItem = ({ item }) => (
-        <Item name={item.name} dialCode={item.dialCode} flagCode={item.flagCode} isoCode={item.isoCode}
-        selectedCountry={selectedCountry} setSelectedCountry={setSelectedCountry} selectedPhoneIndex={selectedPhoneIndex}/>
-    );
-
     const phoneNumbers = () => {
         let elements = [];
         if(newContactDetails.phoneNumbers.length == 0){
             elements.push(<Text key="text input 1" style={{width:"40%"}} placeholder={"Enter Phone Number"} value={newContactDetails.phoneNumbers} onChangeText={text => {
-                
                 let temp = {...newContactDetails};
                 temp.phoneNumbers[0].number = text;
                 setNewContactDetails(temp);
-                
             }}/>)
         }else{
             newContactDetails.phoneNumbers.forEach((number, index) => {
-                
                 elements.push(<View style={{flexDirection: "row"}}>
-                    {/* <TextInput style={{flex: 2}} placeholder='extention'/> */}
-                    <Button style={{flex: 1}} onPress={()=>{
+                    <Button style={{flex: 1, alignSelf: "center"}} onPress={()=>{
                         setModalVisible(true);
                         setSelectedPhoneIndex(index);
-                    }}>Extension</Button>
+                    }}><Paragraph style={{flex: 1, textAlign: "center"}}>Location</Paragraph></Button>
                     <TextInput key={"text input " + index} style={{flex: 3}} placeholder={"Enter Phone Number"}
+                    keyboardType={"numeric"}
                     value={newContactDetails.phoneNumbers[index].number} onChangeText={text => {
                         let temp = {...newContactDetails};
                         temp.phoneNumbers[index].number = text;
                         setNewContactDetails(temp)
-                    }}/></View>)
-                
+                    }}/><TextInput key={"text input Extension " + index} style={{flex: 2, marginLeft: 5}} placeholder={"Extension"}
+                    keyboardType={"numeric"}
+                    value={newContactDetails.phoneNumbers[index].extension} onChangeText={text => {
+                        let temp = {...newContactDetails};
+                        temp.phoneNumbers[index].extension = text;
+                        setNewContactDetails(temp)
+                    }}/></View>
+                );
             }); 
-
         }
-        
-
         elements.push(<Button id="button 1" onPress={()=>{
             let temp = {...newContactDetails};
-            temp.phoneNumbers.push({});
+            temp.phoneNumbers.push({number: ""});
             setNewContactDetails(temp)
         }}>Add Another Phone Number</Button>)
         return elements;
@@ -112,46 +85,51 @@ const Contact = ({token}) => {
                 }>Add A New Contact</Button> : <></>}
             </View>
             {addContact ? <View style={{flex: 4}}>
-            <TextInput style={{width:"40%"}} placeholder={"Enter Company"} value={newContactDetails.company} onChangeText={text => {
+            <Paragraph style={{textAlign: "center"}}>Enter the contact details here</Paragraph>
+            <TextInput style={style.input} placeholder={"Enter Company"} value={newContactDetails.company} onChangeText={text => {
                 let temp = {...newContactDetails};
                 temp.company = text;
                 setNewContactDetails(temp)
             }}/>
-            <TextInput style={{width:"40%"}} placeholder={"Enter Contact Name"} value={newContactDetails.contactName} onChangeText={text => {
+            <TextInput style={style.input} placeholder={"Enter Contact Name"} value={newContactDetails.contactName} onChangeText={text => {
                 let temp = {...newContactDetails};
                 temp.contactName = text;
                 setNewContactDetails(temp)
             }}/>
             {phoneNumbers()}
-            <TextInput style={{width:"40%"}} placeholder={"Enter Primary Email Address"} value={newContactDetails["primaryEmailAddress"]} onChangeText={text => {
+            <TextInput style={style.input} placeholder={"Enter Primary Email Address"} value={newContactDetails["primaryEmailAddress"]} onChangeText={text => {
                 let temp = {...newContactDetails};
                 temp["primaryEmailAddress"] = text;
                 setNewContactDetails(temp)
             }}/>
-            <Modal visible={modalVisible}>
-                <View style={{flex: 1, backgroundColor: colors.background}}>
-                <View style={{flex: 3}}>{countries ? <FlatList
-                    data={countries}
-                    renderItem={renderItem}
-                    keyExtractor={(item, index) => index}
-                /> : <></>}
-                </View>
-                {selectedCountry[selectedPhoneIndex] ? 
-                    <View style={{flex: 1, flexDirection: "row", justifyContent: "space-evenly", marginTop: 50}}>
-                        <Paragraph style={style.item}>{selectedCountry[selectedPhoneIndex].dialCode}</Paragraph>
-                        <Paragraph style={style.item}>{selectedCountry[selectedPhoneIndex].flagCode}</Paragraph>
-                        <Paragraph style={style.item}>{selectedCountry[selectedPhoneIndex].isoCode}</Paragraph>
-                        <Paragraph style={style.item}>{selectedCountry[selectedPhoneIndex].name}</Paragraph>
-                    </View> : <></>}
-                <View style={{flex: 1}}>
-                    <Button onPress={()=>{setModalVisible(false)}}>Accept selected</Button>
-                </View>
-                </View>
-            </Modal>
-            <Button>Add New Contact</Button>
+            {modalVisible ? <CountryDisplay modalVisible={modalVisible} setModalVisible={setModalVisible} colors={colors}
+            selectedCountry={selectedCountry} setSelectedCountry={setSelectedCountry} selectedPhoneIndex={selectedPhoneIndex}
+            newContactDetails={newContactDetails} setNewContactDetails={setNewContactDetails} setAddContact={setAddContact}/>  : <></>}
+            
+            <Button onPress={()=>{
+                let tempHold = {...newContactDetails};
+                newContactDetails.phoneNumbers.forEach((phoneNumber, index) => {
+                    if(phoneNumber.number){
+                        console.log(phoneNumber.number)
+                        tempHold.phoneNumbers[index].areaCode = phoneNumber.number.substring(0,3);
+                        tempHold.phoneNumbers[index].number = phoneNumber.number.slice(3);
+                    }
+                });
+                if(tempHold){
+                    console.log(token)
+                    console.log(tempHold)
+                    addNewContact(token, tempHold)
+                    setModalVisible(false);
+                    setAddContact(false);
+
+                    console.log(modalVisible)
+                }
+            }}>Add New Contact</Button>
 
             </View> : <View style={{flex: 4}}>
-                {contacts && contacts.length > 0 ? <></> : <Paragraph style={{textAlign: "center"}}>No Contacts</Paragraph>}
+                {contacts && contacts.length > 0 ? <View>
+                    <ContactsDisplay data={contacts}/>
+                </View> : <Paragraph style={{textAlign: "center"}}>No Contacts</Paragraph>}
 
             </View>}
             
@@ -164,11 +142,17 @@ const mapStateToProps = (state) => {
     return { token }
 };
 
-const style = StyleSheet.create({
-    item:{
-        width: 100,
-        height: 50
-    }
-  })
+const mapDispatchToProps = dispatch => (
+    bindActionCreators({
+        setPage,
+    }, dispatch)
+);
 
-export default connect(mapStateToProps)(Contact);
+const style = StyleSheet.create({
+    input:{
+        alignSelf: "center",
+        width:"40%"
+    }
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(Contact);
