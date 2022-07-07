@@ -20,7 +20,7 @@ const Item = ({ dialCode, flagCode, isoCode, name, setSelectedCountry, selectedP
   );
 
 const CountryDisplay = ({modalVisible, setModalVisible, colors, selectedCountry, setSelectedCountry, selectedPhoneIndex,
-    newContactDetails, setNewContactDetails, setAddContact}) => {
+    newContactDetails, setNewContactDetails}) => {
     const [countries, setCountries] = useState();
 
     const renderItem = ({ item }) => (
@@ -57,8 +57,11 @@ const CountryDisplay = ({modalVisible, setModalVisible, colors, selectedCountry,
                     <Button onPress={()=>{
                         setModalVisible(false)
                         let temp = {...newContactDetails};
-                        temp.phoneNumbers[selectedPhoneIndex] = {areaCode: "", category: "HOME", countryCode: selectedCountry.dialCode, id: selectedPhoneIndex, number: newContactDetails.phoneNumbers[selectedPhoneIndex].number};
-
+                        
+                        temp.phoneNumbers[selectedPhoneIndex] = {areaCode: "", category: "HOME",
+                         countryCode: selectedCountry.dialCode, extension: newContactDetails.phoneNumbers[selectedPhoneIndex].extension,
+                          id: selectedPhoneIndex, number: newContactDetails.phoneNumbers[selectedPhoneIndex].number};
+                        
                         setNewContactDetails(temp);
                         // selectedPhoneIndex
                         }}>Accept selected</Button>

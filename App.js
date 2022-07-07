@@ -1,6 +1,6 @@
 import { StatusBar } from 'react-native';
-import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+// import { StyleSheet, Text, View } from 'react-native';
 import { DefaultTheme, DarkTheme, Provider as PaperProvider } from 'react-native-paper';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -11,6 +11,7 @@ import Login from './app/screens/Login';
 import Header from './app/components/Header';
 import Homepage from './app/screens/Homepage';
 import Contact from './app/screens/Contact';
+import EditContact from './app/screens/EditContact';
 
 
 let theme = "dark"
@@ -46,10 +47,11 @@ export default function App() {
         <NavigationContainer>
           <Header/>
           <StatusBar hidden/>
-          <stack.Navigator screenOptions={{ headerShown: false }}>
+          <stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="login">
             <stack.Screen name="login" children={()=> <Login/>} />
             <stack.Screen name="home" children={()=> <Homepage/>} />
             <stack.Screen name="contact" children={()=> <Contact/>} />
+            <stack.Screen name="edit-contact" children={()=> <EditContact/>} />
           </stack.Navigator>
         </NavigationContainer>
       </ReduxProvider>
@@ -57,11 +59,11 @@ export default function App() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     backgroundColor: '#fff',
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//   },
+// });

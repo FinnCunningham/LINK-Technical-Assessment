@@ -66,7 +66,7 @@ const getProfile = (token, setProfile) => {
         }
       }
     const callback = (data) => {
-        console.log(data);
+        // console.log(data);
         setProfile(data);
     }
     fetchFromAPI("/profile?name=user3@intrinsicgrouplimited.com", data, callback)
@@ -82,7 +82,7 @@ const getContacts = (token, setContacts) => {
         }
       }
     const callback = (data) => {
-        console.log(data);
+        // console.log(data);
         setContacts(data);
     }
     fetchFromAPI("/contacts?name=user3@intrinsicgrouplimited.com", data, callback)
@@ -112,45 +112,64 @@ const addNewContact = (token, bodyData) => {
     fetchFromAPI("/contacts?name=user3@intrinsicgrouplimited.com", data, callback)
 }
 
+const editContact = (token, id, bodyData) => {
+    let data = {
+        method: 'PUT',
+        body: JSON.stringify({
+            "company": bodyData.company,
+            "contactName": bodyData.contactName,
+            "phoneNumbers": bodyData.phoneNumbers,
+            "primaryEmailAddress": bodyData.primaryEmailAddress
+        }),
+        headers: {
+          // 'Accept':       'application/json',
+          "accept": "*/*",
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    const callback = (data) => {
+        console.log("CALLBACK")
+        console.log(data);
+        // setContacts(data);
+    }
+    fetchFromAPI(`/contacts/${id}?name=user3@intrinsicgrouplimited.com`, data, callback)
+}
+
+const deleteContact = (token, id) => {
+    let data = {
+        method: 'DELETE',
+        headers: {
+          // 'Accept':       'application/json',
+          "accept": "*/*",
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    const callback = (data) => {
+        console.log("CALLBACK")
+        console.log(data);
+    }
+    fetchFromAPI(`/contacts/${id}?name=user3@intrinsicgrouplimited.com`, data, callback)
+}
 const setNewImage = (token, image, setProfileImg) => {
-    let url = baseURL + `/profile/profileImage?name=user3@intrinsicgrouplimited.com`;
-    RNFetchBlob.fetch('POST', url, {
-        "accept": "*/*",
-        "Content-Type": "multipart/form-data",
-        "Authorization": `Bearer ${token}`
-      }, JSON.stringify({file: image.assets[0].uri}))
-    // when response status code is 200
-    .then((res) => {
-        // the conversion is done in native code
-        console.log(res)
-        console.log('The file saved to ', res.path())
-        setProfileImg(res.path())
-    })
-    // Status code is not 200
-    .catch((errorMessage, statusCode) => {
-        console.log(errorMessage)
-        // error handling
-    })
-
-    // console.log(image)
-
-    // let data = {
-    //     method: 'POST',
-    //     body: JSON.stringify({
-    //         file: image.assets[0]
-    //     }),
-    //     headers: {
-    //       "accept": "*/*",
-    //       "Content-Type": "multipart/form-data",
-    //       "Authorization": `Bearer ${token}`
-    //     }
-    //   }
-    // const callback = (data) => {
-    //     console.log("CALLBACK")
-    //     console.log(data);
-    //     // setContacts(data);
-    // }
-    // fetchFromAPI("/profile/profileImage?name=user3@intrinsicgrouplimited.com", data, callback)
+    var body = new FormData();
+    body.append('file', {uri: image.assets[0].uri, type: image.assets[0].type, name: image.assets[0].fileName});
+    let data = {
+        method: 'POST',
+        body: body,
+        headers: {
+          "accept": "*/*",
+          "Content-Type": "multipart/form-data",
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    const callback = (data) => {
+        console.log("CALLBACK")
+        console.log(data);
+        getProfileImage(setProfileImg)
+    }
+    fetchFromAPI("/profile/profileImage?name=user3@intrinsicgrouplimited.com", data, callback)
 }
 
 const getCountries = (setCountries) => {
@@ -162,7 +181,7 @@ const getCountries = (setCountries) => {
         }
       }
     const callback = (data) => {
-        console.log(data);
+        // console.log(data);
         setCountries(data);
     }
     fetchFromAPI("/utility/countries", data, callback)
@@ -170,6 +189,7 @@ const getCountries = (setCountries) => {
 
 // The api does not return an user id but I know it is "3"
 const getProfileImage = (setProfileImg, id=3) => {
+    console.log("YO")
     let url = baseURL + `/profile/profileImage/${id}`;
     RNFetchBlob.config({
         fileCache : true,
@@ -188,4 +208,4 @@ const getProfileImage = (setProfileImg, id=3) => {
 }
 
 export {loginAuth, getProfile, getProfileImage, getCountries, getContacts, addNewContact,
-    setNewImage};
+    setNewImage, editContact, deleteContact};

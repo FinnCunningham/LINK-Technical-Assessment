@@ -1,41 +1,100 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import { Paragraph } from 'react-native-paper';
+import { Paragraph, useTheme, Button } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
+import { deleteContact } from '../controllers/Api';
+import {Swipeable} from 'react-native-gesture-handler';
 
-const displayPhoneNumbers = (phoneNumbers) => {
+const displayPhoneNumbers = (phoneNumbers, navigation, contact) => {
     let items = [];
-    console.log(phoneNumbers)
-    phoneNumbers.forEach(number => {
-        items.push(<View style={{flex: 1, flexDirection: "row", justifyContent: "space-evenly"}}>
-            <Paragraph style={[style.itemPhone, {marginLeft: 20}]}>{number.category}</Paragraph>
-            <Paragraph style={style.itemPhone}>{number.id}</Paragraph>
-            <Paragraph style={[style.itemPhone, {flex: 2, marginRight: 20}]}>{number.phoneNumberFormatted}</Paragraph>
-
-
+    phoneNumbers.forEach((number, numIndex) => {
+        items.push(<View style={{flex: 1, flexDirection: "row", justifyContent: "space-evenly"}} key={"View " + numIndex}>
+            <Paragraph style={[style.itemPhone, {marginLeft: 20}]} key={"Phone Category Paragraph " + numIndex}>{number.category}</Paragraph>
+            <Paragraph style={[style.itemPhone, {flex: 2, marginRight: 20}]} key={"Phone Num Paragraph " + numIndex}>{number.phoneNumberFormatted}</Paragraph>
         </View>)
     });
+    items.push(<Button style={{width: "40%", alignSelf: "center"}} 
+    onPress={()=>{navigation.navigate("edit-contact", {type: "edit", contact: contact})}}>Edit</Button>)
     return items;
 }
 
-const Item = ({ item }) => (
-    <TouchableOpacity style={{backgroundColor: "gray"}}>
-        <View style={{flex: 1, flexDirection: "row", justifyContent: "space-evenly"}}>
-            <Paragraph style={[style.itemPhone, {marginLeft: 20}]}>{item.company}</Paragraph>
-            <Paragraph style={style.itemPhone}>{item.contactName}</Paragraph>
-            <Paragraph style={[style.itemPhone,  {marginRight: 20}]}>{item.primaryEmailAddress}</Paragraph>
-        </View>
-        <View >
-            {displayPhoneNumbers(item.phoneNumbers)}
-        </View>
-    </TouchableOpacity>
+const getRandomColor = () => {
+    return Math.floor(Math.random()*16777215).toString(16);
+}
+
+const rightAction = (token, id, setShowDetails) => {
+    // Update render
+    return(
+        <View style={{padding: 15}}>
+            <Button onPress={()=>{
+                deleteContact(token, id);
+                setShowDetails({show: false, index: 0})
+            }}>Delete</Button>
+        </View>  
+    )
+}
+
+const Item = ({ item, itemOnClick, index, showDetails, colors, contactColors, navigation, contact, token, setShowDetails }) => (
+    <Swipeable renderRightActions={() => {return rightAction(token, item.id, setShowDetails)}}>
+        <TouchableOpacity style={{backgroundColor: colors.surface, marginTop: 10, width: "90%", alignSelf: "center", borderRadius: 10, minHeight: 50}}
+        onPress={()=>itemOnClick(index)}>
+            <View style={{flexDirection: "row"}}>
+                <View style={{marginLeft: 8, alignSelf: "center"}}>
+                    <View style={{width: 40, height: 40, borderRadius: 25, backgroundColor: contactColors ? "#" + contactColors[index] : "blue"}}>
+                        <Paragraph style={{textAlign: "center", top: "30%", fontSize: 20}}>{item.contactName[0]}</Paragraph>
+                    </View>
+                </View>
+                <View style={{flex: 1, flexDirection: "column", marginLeft: 30}}>
+                    <Paragraph style={[style.itemPhone, {fontWeight: "bold", marginBottom: 10}]}>{item.contactName}</Paragraph>
+                    <Paragraph style={[style.itemPhone]}>{item.company}</Paragraph>
+                </View>
+                <View>
+                    <Paragraph style={[style.itemPhone,  {marginRight: 20, flex: 2, textAlignVertical: "center"}]}>{item.primaryEmailAddress}</Paragraph>
+                </View> 
+            </View>
+            <View >
+                {index == showDetails.index && showDetails.show ? displayPhoneNumbers(item.phoneNumbers, navigation, contact) : <></>}
+            </View>
+        </TouchableOpacity>
+    </Swipeable>
 
   );
 
-const ContactsDisplay = ({data}) => {
+const ContactsDisplay = ({data, token}) => {
+    const {colors} = useTheme();
+    const [showDetails, setShowDetails] = useState({show: false, index: 0});
+    const [contactColors, setContactColors] = useState();
+    const navigation = useNavigation();
+    const itemOnClick = (index) => {
+        let temp = {...showDetails};
+        if(showDetails.index != index){
+            temp.index = index;
+            temp.show = true;
+        }else{
+            if(showDetails.show){
+                temp.show = false;
+            }else{
+                temp.show = true;
+            }
+        }
+        setShowDetails(temp)
+    }
+    console.log(showDetails)
 
-    const renderItem = ({ item }) => (
-        <Item item={item}/>
+    const renderItem = ({ item, index }) => (
+        <Item item={item} itemOnClick={itemOnClick} index={index} showDetails={showDetails} colors={colors} 
+        contactColors={contactColors} navigation={navigation} contact={data[showDetails.index]} token={token}
+        setShowDetails={setShowDetails}/>
     );
+
+    useEffect(()=>{
+        console.log("CHANGE")
+        let temp = [];
+        data.forEach(dataItem => {
+            temp.push(getRandomColor());
+        });
+        setContactColors(temp);
+    }, [data])
 
     return(
         <View>
@@ -43,7 +102,9 @@ const ContactsDisplay = ({data}) => {
                 data={data}
                 renderItem={renderItem}
                 keyExtractor={(item, index) => index}
-                />
+                
+            /> 
+            
         </View>
     )
 }

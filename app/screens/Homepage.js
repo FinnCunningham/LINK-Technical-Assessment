@@ -21,7 +21,6 @@ const Homepage = ({token, setPage}) => {
     const { colors } = useTheme();
     const [profile, setProfile] = useState({});
     const [profileImg, setProfileImg] = useState();
-    // console.log(token)
     const navigation = useNavigation();
     const [pickerResponse, setPickerResponse] = useState(null);
 
@@ -33,9 +32,6 @@ const Homepage = ({token, setPage}) => {
         getProfileImage(setProfileImg);
         
     }, [])
-    // useEffect(()=>{
-    //     console.log(profile)
-    // }, [profile])
 
     useEffect(()=>{
         if(pickerResponse){
@@ -51,7 +47,6 @@ const Homepage = ({token, setPage}) => {
     
     return(
         <View style={{flex: 1, backgroundColor: colors.background}}>
-            <Paragraph>Home Page</Paragraph>
             <View style={{alignItems: "center"}}>
                 {profileImg ? 
                 <View>
