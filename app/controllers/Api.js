@@ -30,7 +30,7 @@ const fetchFromAPI = (endUrl, data, callback) => {
 
 }
 
-const loginAuth = (username, password, reduxAdd, navigation, setError) => {
+const loginAuth = (username, password, reduxAdd, navigation, setError, setName) => {
     let data = {
         method: 'POST',
         body: JSON.stringify({
@@ -38,7 +38,6 @@ const loginAuth = (username, password, reduxAdd, navigation, setError) => {
           username: username
         }),
         headers: {
-          // 'Accept':       'application/json',
           "accept": "*/*",
           'Content-Type': 'application/json',
         }
@@ -49,34 +48,34 @@ const loginAuth = (username, password, reduxAdd, navigation, setError) => {
             setError(data.error);
         }
         if(data.token){
-            reduxAdd(data.token)
+            reduxAdd(data.token);
+            setName(username);
             navigation.navigate("home");
         }
     }
     fetchFromAPI("/auth/login", data, callback)
     }
 
-const getProfile = (token, setProfile) => {
-    let data = {
-        method: 'GET',
-        headers: {
-          // 'Accept':       'application/json',
-          "accept": "*/*",
-          "Authorization": `Bearer ${token}`
-        }
+const getProfile = (token, setProfile, name="user3@intrinsicgrouplimited.com") => {
+  console.log(name)
+  let data = {
+      method: 'GET',
+      headers: {
+        "accept": "*/*",
+        "Authorization": `Bearer ${token}`
       }
-    const callback = (data) => {
-        // console.log(data);
-        setProfile(data);
     }
-    fetchFromAPI("/profile?name=user3@intrinsicgrouplimited.com", data, callback)
+  const callback = (data) => {
+      console.log(data);
+      setProfile(data);
+  }
+  fetchFromAPI(`/profile?name=${name}`, data, callback)
 }
 
-const getContacts = (token, setContacts) => {
+const getContacts = (token, setContacts, name="user3@intrinsicgrouplimited.com") => {
     let data = {
         method: 'GET',
         headers: {
-          // 'Accept':       'application/json',
           "accept": "*/*",
           "Authorization": `Bearer ${token}`
         }
@@ -85,10 +84,10 @@ const getContacts = (token, setContacts) => {
         // console.log(data);
         setContacts(data);
     }
-    fetchFromAPI("/contacts?name=user3@intrinsicgrouplimited.com", data, callback)
+    fetchFromAPI(`/contacts?name=${name}`, data, callback)
 }
 
-const addNewContact = (token, bodyData) => {
+const addNewContact = (token, bodyData, name="user3@intrinsicgrouplimited.com") => {
     let data = {
         method: 'POST',
         body: JSON.stringify({
@@ -98,7 +97,6 @@ const addNewContact = (token, bodyData) => {
             "primaryEmailAddress": bodyData.primaryEmailAddress
         }),
         headers: {
-          // 'Accept':       'application/json',
           "accept": "*/*",
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
@@ -109,10 +107,10 @@ const addNewContact = (token, bodyData) => {
         console.log(data);
         // setContacts(data);
     }
-    fetchFromAPI("/contacts?name=user3@intrinsicgrouplimited.com", data, callback)
+    fetchFromAPI(`/contacts?name=${name}`, data, callback)
 }
 
-const editContact = (token, id, bodyData) => {
+const editContact = (token, id, bodyData, name="user3@intrinsicgrouplimited.com") => {
     let data = {
         method: 'PUT',
         body: JSON.stringify({
@@ -122,7 +120,6 @@ const editContact = (token, id, bodyData) => {
             "primaryEmailAddress": bodyData.primaryEmailAddress
         }),
         headers: {
-          // 'Accept':       'application/json',
           "accept": "*/*",
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
@@ -133,14 +130,13 @@ const editContact = (token, id, bodyData) => {
         console.log(data);
         // setContacts(data);
     }
-    fetchFromAPI(`/contacts/${id}?name=user3@intrinsicgrouplimited.com`, data, callback)
+    fetchFromAPI(`/contacts/${id}?name=${name}`, data, callback)
 }
 
-const deleteContact = (token, id) => {
+const deleteContact = (token, id, name="user3@intrinsicgrouplimited.com") => {
     let data = {
         method: 'DELETE',
         headers: {
-          // 'Accept':       'application/json',
           "accept": "*/*",
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
@@ -150,9 +146,9 @@ const deleteContact = (token, id) => {
         console.log("CALLBACK")
         console.log(data);
     }
-    fetchFromAPI(`/contacts/${id}?name=user3@intrinsicgrouplimited.com`, data, callback)
+    fetchFromAPI(`/contacts/${id}?name=${name}`, data, callback)
 }
-const setNewImage = (token, image, setProfileImg) => {
+const setNewImage = (token, image, setProfileImg, name="user3@intrinsicgrouplimited.com") => {
     var body = new FormData();
     body.append('file', {uri: image.assets[0].uri, type: image.assets[0].type, name: image.assets[0].fileName});
     let data = {
@@ -167,16 +163,19 @@ const setNewImage = (token, image, setProfileImg) => {
     const callback = (data) => {
         console.log("CALLBACK")
         console.log(data);
-        getProfileImage(setProfileImg)
+        if(data.error){
+          getProfileImage(setProfileImg, data.error);
+        }else{
+          getProfileImage(setProfileImg);
+        }
     }
-    fetchFromAPI("/profile/profileImage?name=user3@intrinsicgrouplimited.com", data, callback)
+    fetchFromAPI(`/profile/profileImage?name=${name}`, data, callback)
 }
 
 const getCountries = (setCountries) => {
     let data = {
         method: 'GET',
         headers: {
-          // 'Accept':       'application/json',
           "accept": "*/*"
         }
       }
@@ -188,17 +187,25 @@ const getCountries = (setCountries) => {
 }
 
 // The api does not return an user id but I know it is "3"
-const getProfileImage = (setProfileImg, id=3) => {
-    console.log("YO")
+const getProfileImage = (setProfileImg, error=null, id=3) => {
     let url = baseURL + `/profile/profileImage/${id}`;
     RNFetchBlob.config({
         fileCache : true,
       }).fetch('GET', url)
     // when response status code is 200
     .then((res) => {
+      console.log(res)
         // the conversion is done in native code
         console.log('The file saved to ', res.path())
-        setProfileImg(res.path())
+        console.log("STATUS " + res.respInfo.status)
+        if(error || res.respInfo.status != 200){
+          if(!error){
+            error = "Error: If the problem persists please contact support";
+          }
+          setProfileImg({path: {}, error: error})
+        }else{
+          setProfileImg({path: res.path()})
+        }
     })
     // Status code is not 200
     .catch((errorMessage, statusCode) => {

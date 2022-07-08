@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, FlatList, StyleSheet } from 'react-native';
+import { View, Image, FlatList, StyleSheet, ToastAndroid } from 'react-native';
 import { connect } from 'react-redux';
 import { useTheme, Paragraph, Button} from 'react-native-paper';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { getProfile, getProfileImage, getCountries, setNewImage } from '../controllers/Api';
+import { getProfile, getProfileImage, setNewImage } from '../controllers/Api';
 import { bindActionCreators } from 'redux';
 import { setPage } from '../controllers/ReduxAction';
 import { launchImageLibrary } from 'react-native-image-picker';
@@ -17,7 +17,7 @@ const openGallery = (setPickerResponse) => {
     launchImageLibrary(options, setPickerResponse);
 }
 
-const Homepage = ({token, setPage}) => {
+const Homepage = ({token, setPage, name}) => {
     const { colors } = useTheme();
     const [profile, setProfile] = useState({});
     const [profileImg, setProfileImg] = useState();
@@ -28,29 +28,42 @@ const Homepage = ({token, setPage}) => {
         navigation.navigate("login")
     }
     useEffect(()=>{
-        getProfile(token, setProfile);
+        getProfile(token, setProfile, name); //name
         getProfileImage(setProfileImg);
         
     }, [])
 
     useEffect(()=>{
-        if(pickerResponse){
-            setNewImage(token, pickerResponse, setProfileImg)
+        // Check if the response exists and if they canceled before submitting to avoid errors.
+        console.log(pickerResponse)
+        if(pickerResponse && !pickerResponse["didCancel"] && !pickerResponse.error){
+            setNewImage(token, pickerResponse, setProfileImg, name)
             setPickerResponse("");
         }
     }, [pickerResponse])
+
+    useEffect(()=>{
+        console.log(profileImg)
+        if(profileImg && profileImg.error){
+            ToastAndroid.show(profileImg.error, ToastAndroid.SHORT)
+        }
+    }, [profileImg])
 
     useFocusEffect(()=>{
         setPage("Homepage")
 
     });
-    
+
+    if(profile.error){
+        ToastAndroid.show(profile.error, ToastAndroid.SHORT)
+    }
+
     return(
         <View style={{flex: 1, backgroundColor: colors.background}}>
             <View style={{alignItems: "center"}}>
                 {profileImg ? 
                 <View>
-                    <Image source={{uri: 'file://' + profileImg}} style={{width: 100, height: 100, resizeMode: "contain", borderRadius: 10}}/>
+                    <Image source={{uri: 'file://' + profileImg.path}} style={{width: 100, height: 100, resizeMode: "contain", borderRadius: 10}}/>
                 </View> : <></>}
                 <Button onPress={()=>{
                     openGallery(setPickerResponse);
@@ -73,8 +86,8 @@ const Homepage = ({token, setPage}) => {
 }
 
 const mapStateToProps = (state) => {
-    const { token } = state.reducer
-    return { token }
+    const { token, name } = state.reducer
+    return { token, name }
   };
 
 const mapDispatchToProps = dispatch => (

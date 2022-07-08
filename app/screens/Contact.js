@@ -8,17 +8,26 @@ import { getContacts } from '../controllers/Api';
 import ContactsDisplay from '../components/ContactsDisplay';
 import { setPage } from '../controllers/ReduxAction';
 
-const Contact = ({token, setPage}) => {
+const Contact = ({token, setPage, name}) => {
     const { colors } = useTheme();
     const [contacts, setContacts] = useState();
     const navigation = useNavigation();
     const isFocused = useIsFocused();
+    const [updateContacts, setUpdateContacts] = useState(false);
+
     useEffect(()=>{
         setPage("Contact");
     }, [])
 
     useEffect(()=>{
-        getContacts(token, setContacts)
+        if(updateContacts){
+            getContacts(token, setContacts, name);
+            setUpdateContacts(false);
+        }
+    }, [updateContacts])
+
+    useEffect(()=>{
+        getContacts(token, setContacts, name)
     }, [isFocused])
 
 
@@ -31,15 +40,15 @@ const Contact = ({token, setPage}) => {
             </View>
             {contacts && contacts.length > 0 ? 
             <View style={{flex: 4}}>
-                <ContactsDisplay data={contacts} token={token}/>
+                <ContactsDisplay data={contacts} token={token} name={name} setUpdateContacts={setUpdateContacts}/>
             </View> : <Paragraph style={{textAlign: "center"}}>No Contacts</Paragraph>}
         </View>
     )
 }
 
 const mapStateToProps = (state) => {
-    const { token } = state.reducer
-    return { token }
+    const { token, name } = state.reducer
+    return { token, name }
 };
 
 const mapDispatchToProps = dispatch => (

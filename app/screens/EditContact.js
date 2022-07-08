@@ -6,7 +6,7 @@ import CountryDisplay from '../components/CountryDisplay';
 import { editContact, addNewContact } from '../controllers/Api';
 import { connect } from 'react-redux';
 
-const EditContact = ({token}) => {
+const EditContact = ({token, name}) => {
     const {colors} = useTheme();
     const route = useRoute();
     const {type, contact} = route.params;
@@ -66,7 +66,7 @@ const EditContact = ({token}) => {
                     let temp = {...newContactDetails};
                     temp.phoneNumbers.splice(index, 1);
                     setNewContactDetails(temp);
-                }}>Del</Button>: <View style={{flex: 1}}></View>}</View> 
+                }} key={"DEL btn " + index}>Del</Button>: <View style={{flex: 1}}></View>}</View> 
             );
         }); 
         // }
@@ -153,11 +153,11 @@ const EditContact = ({token}) => {
                             if(type == "edit"){
                                 let id = tempHold.id;
                                 delete tempHold.id;
-                                editContact(token, id, tempHold);
+                                editContact(token, id, tempHold, name);
                                 navigation.navigate("contact");
                             }else{
                                 console.log("ADDING WORKS")
-                                addNewContact(token, tempHold)
+                                addNewContact(token, tempHold, name)
                                 navigation.navigate("contact");
                             }
                         }
@@ -181,8 +181,8 @@ const style = StyleSheet.create({
 })
 
 const mapStateToProps = (state) => {
-    const { token } = state.reducer
-    return { token }
+    const { token, name } = state.reducer
+    return { token, name }
 };
 
 export default connect(mapStateToProps)(EditContact);

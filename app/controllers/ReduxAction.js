@@ -19,4 +19,11 @@ const setPage = reduxIndex => (
   }
 );
 
-export {reduxAdd, setPage};
+const setName = reduxIndex => (
+  {
+    type: 'SET_NAME',
+    payload: reduxIndex,
+  }
+);
+
+export {reduxAdd, setPage, setName};

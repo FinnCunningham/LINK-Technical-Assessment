@@ -22,20 +22,20 @@ const getRandomColor = () => {
     return Math.floor(Math.random()*16777215).toString(16);
 }
 
-const rightAction = (token, id, setShowDetails) => {
+const rightAction = (token, id, setUpdateContacts, name) => {
     // Update render
     return(
         <View style={{padding: 15}}>
             <Button onPress={()=>{
-                deleteContact(token, id);
-                setShowDetails({show: false, index: 0})
+                deleteContact(token, id, name);
+                setUpdateContacts(true)
             }}>Delete</Button>
         </View>  
     )
 }
 
-const Item = ({ item, itemOnClick, index, showDetails, colors, contactColors, navigation, contact, token, setShowDetails }) => (
-    <Swipeable renderRightActions={() => {return rightAction(token, item.id, setShowDetails)}}>
+const Item = ({ item, itemOnClick, index, showDetails, colors, contactColors, token, setUpdateContacts, name, localPhoneDisplay }) => (
+    <Swipeable renderRightActions={() => {return rightAction(token, item.id, setUpdateContacts, name, showDetails)}}>
         <TouchableOpacity style={{backgroundColor: colors.surface, marginTop: 10, width: "90%", alignSelf: "center", borderRadius: 10, minHeight: 50}}
         onPress={()=>itemOnClick(index)}>
             <View style={{flexDirection: "row"}}>
@@ -53,14 +53,14 @@ const Item = ({ item, itemOnClick, index, showDetails, colors, contactColors, na
                 </View> 
             </View>
             <View >
-                {index == showDetails.index && showDetails.show ? displayPhoneNumbers(item.phoneNumbers, navigation, contact) : <></>}
+                {index == showDetails.index && showDetails.show ? localPhoneDisplay() : <></>}
             </View>
         </TouchableOpacity>
     </Swipeable>
 
   );
 
-const ContactsDisplay = ({data, token}) => {
+const ContactsDisplay = ({data, token, name, setUpdateContacts}) => {
     const {colors} = useTheme();
     const [showDetails, setShowDetails] = useState({show: false, index: 0});
     const [contactColors, setContactColors] = useState();
@@ -81,14 +81,15 @@ const ContactsDisplay = ({data, token}) => {
     }
     console.log(showDetails)
 
-    const renderItem = ({ item, index }) => (
-        <Item item={item} itemOnClick={itemOnClick} index={index} showDetails={showDetails} colors={colors} 
-        contactColors={contactColors} navigation={navigation} contact={data[showDetails.index]} token={token}
-        setShowDetails={setShowDetails}/>
-    );
+    const renderItem = ({ item, index }) => {
+        const localPhoneDisplay = () => displayPhoneNumbers(item.phoneNumbers, navigation, data[showDetails.index]);
+        return(
+            <Item item={item} itemOnClick={itemOnClick} index={index} showDetails={showDetails} colors={colors} 
+            contactColors={contactColors} token={token} name={name} setUpdateContacts={setUpdateContacts}
+            localPhoneDisplay={localPhoneDisplay}/>)
+    };
 
     useEffect(()=>{
-        console.log("CHANGE")
         let temp = [];
         data.forEach(dataItem => {
             temp.push(getRandomColor());

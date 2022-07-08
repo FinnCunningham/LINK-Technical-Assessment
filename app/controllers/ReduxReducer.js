@@ -2,29 +2,25 @@ import { combineReducers } from 'redux';
 
 const INITIAL_STATE = {
   token: "",
-  page: ""
+  page: "",
+  name: ""
 };
 
 const ReduxReducer = (state = INITIAL_STATE, action) => {
   let newState = {};
-  let {token, page} = {...state};
+  let {token, page, name} = {...state};
   switch (action.type) {
     case 'SET_TOKEN':
-        // const {token} = state;
-        // console.log(action.payload)
-        
-        token = action.payload;
-
-        // Finally, update the redux state
-        newState = { token, page };
-  
+      token = action.payload;
+      newState = { token, page, name };
       return newState;
-
     case 'SET_PAGE':
-      // console.log("SETTING PAGE TO" + action.payload)
       page = action.payload;
-      // console.log("PAYLOAD=" + action.payload)
-      newState = { token, page };
+      newState = { token, page, name };
+      return newState;
+    case 'SET_NAME':
+      name = action.payload;
+      newState = { token, page, name };
       return newState;
     default:
       return state
