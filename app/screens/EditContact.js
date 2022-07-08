@@ -44,11 +44,11 @@ const EditContact = ({token, name}) => {
             <Divider style={{marginTop: 6}}/>
         </View>)
         newContactDetails.phoneNumbers.forEach((number, index) => {
-            elements.push(<View style={{flexDirection: "row"}}>
-                <Button style={{flex: 1, alignSelf: "center"}} onPress={()=>{
+            elements.push(<View key={"Phone number View" + index} style={{flexDirection: "row"}}>
+                <Button key={"Phone number Country View" + index} style={{flex: 1, alignSelf: "center"}} onPress={()=>{
                     setModalVisible(true);
                     setSelectedPhoneIndex(index);
-                }}><Paragraph style={{flex: 1, textAlign: "center"}}>Location</Paragraph></Button>
+                }}><Paragraph key={"Phone number Button Text" + index} style={{flex: 1, textAlign: "center"}}>Location</Paragraph></Button>
                 <TextInput key={"text input " + index} style={{flex: 3}} placeholder={"Phone Number"}
                 keyboardType={"numeric"}
                 value={newContactDetails.phoneNumbers[index].number} onChangeText={text => {

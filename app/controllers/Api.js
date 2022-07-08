@@ -26,6 +26,7 @@ const fetchFromAPI = (endUrl, data, callback) => {
         callback(data)})
     .catch((error) => {
         console.log(error)
+        callback({"error": "Error: Please make sure that the input value is correct!"})
     })
 
 }
@@ -70,6 +71,28 @@ const getProfile = (token, setProfile, name="user3@intrinsicgrouplimited.com") =
       setProfile(data);
   }
   fetchFromAPI(`/profile?name=${name}`, data, callback)
+}
+
+const changePasswordValue = (token, oldPassword, newPassword, setResponse, name="user3@intrinsicgrouplimited.com") => {
+  console.log(name)
+  let data = {
+      method: 'POST',
+      body: JSON.stringify({
+        newPassword: newPassword,
+        oldPassword: oldPassword
+      }),
+      headers: {
+        "accept": "*/*",
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    }
+  const callback = (data) => {
+      console.log("£HITHTIYHITHTI")
+      console.log(data);
+      setResponse(data);
+  }
+  fetchFromAPI(`/profile/changePassword?name=${name}`, data, callback)
 }
 
 const getContacts = (token, setContacts, name="user3@intrinsicgrouplimited.com") => {
@@ -215,4 +238,4 @@ const getProfileImage = (setProfileImg, error=null, id=3) => {
 }
 
 export {loginAuth, getProfile, getProfileImage, getCountries, getContacts, addNewContact,
-    setNewImage, editContact, deleteContact};
+    setNewImage, editContact, deleteContact, changePasswordValue};

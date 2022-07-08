@@ -14,7 +14,6 @@
   */
  const Header = ({page}) => {
      const navigation = useNavigation();
-    console.log(page)
      /**
       * Function that go back a screen in the navigation stack
       */
@@ -30,10 +29,6 @@
  }
  const mapStateToProps = (state) => {
     const { page } = state.reducer
-    console.log(state.reducer)
-    console.log("===============REDUCER===============")
-    console.log(page)
-
     return { page }
   };
  export default connect(mapStateToProps)(Header);

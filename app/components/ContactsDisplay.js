@@ -13,7 +13,7 @@ const displayPhoneNumbers = (phoneNumbers, navigation, contact) => {
             <Paragraph style={[style.itemPhone, {flex: 2, marginRight: 20}]} key={"Phone Num Paragraph " + numIndex}>{number.phoneNumberFormatted}</Paragraph>
         </View>)
     });
-    items.push(<Button style={{width: "40%", alignSelf: "center"}} 
+    items.push(<Button key={"Phone num edit button"} style={{width: "40%", alignSelf: "center"}} 
     onPress={()=>{navigation.navigate("edit-contact", {type: "edit", contact: contact})}}>Edit</Button>)
     return items;
 }
