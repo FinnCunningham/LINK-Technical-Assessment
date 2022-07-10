@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, FlatList, StyleSheet, ToastAndroid } from 'react-native';
+import { View, Image, StyleSheet, ToastAndroid } from 'react-native';
 import { connect } from 'react-redux';
 import { useTheme, Paragraph, Button} from 'react-native-paper';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -33,6 +33,7 @@ const Homepage = ({token, setPage, name}) => {
     useEffect(()=>{
         getProfile(token, setProfile, name);
         getProfileImage(setProfileImg);
+        
     }, [])
 
     useEffect(()=>{
@@ -52,8 +53,7 @@ const Homepage = ({token, setPage, name}) => {
     }, [profileImg])
 
     useFocusEffect(()=>{
-        setPage("Homepage")
-
+        setPage("Homepage");
     });
 
     if(profile.error){
@@ -63,27 +63,32 @@ const Homepage = ({token, setPage, name}) => {
     return(
         <View style={{flex: 1, backgroundColor: colors.background}}>
             <View style={{alignItems: "center", flex: 1}}>
-                <View style={{alignItems: "center", backgroundColor: colors.surface, flex: 1, width: "100%"}}>
+                <View style={{alignItems: "center", backgroundColor: colors.surface, flex: 3, width: "100%"}}>
                     {profileImg ? 
-                    <View>
+                    <View style={{marginTop: 20}}>
                         <TouchableOpacity onPress={()=>{
                             openGallery(setPickerResponse);
                         }}>
-                            <Image source={{uri: 'file://' + profileImg.path}} style={{width: 100, height: 100, resizeMode: "contain", borderRadius: 10}}/>
+                            <View style={{borderColor: "darkred", borderWidth: 1.5, borderRadius: 100, padding: 5}}>
+                                <Image source={{uri: 'file://' + profileImg.path}} style={{width: 100, height: 100, borderRadius: 50}} 
+                                resizeMode="stretch"/>
+                            </View>
+                            
                         </TouchableOpacity>
                     </View> : <></>}
                     {profile ? 
-                        <View>
-                            <Paragraph style={{fontWeight: "bold", textAlign: "center", padding: 5}}>{profile.firstName} {profile.lastName}</Paragraph>
-                            <Paragraph style={{ textAlign: "center", padding: 5}}>{profile.displayName}</Paragraph>
+                        <View style={{alignItems: "center"}}>
+                            <Paragraph style={{fontWeight: "bold", padding: 10, fontSize: 19}}>{profile.displayName}</Paragraph>
+                            {/* <Paragraph style={{}}>@{profile.displayName}</Paragraph> */}
                             <Paragraph style={{padding: 5}}>{profile.emailAddress}</Paragraph>
+                            <Paragraph style={{}}>Joined: {new Date(profile.joinDate).toDateString()}</Paragraph>
                         </View> : <></>}
                     
                 </View>
-                <View style={{flex: 2, borderTopEndRadius: 20, borderTopStartRadius: 20, width: "100%", marginTop: -20,
+                <View style={{flex: 3, borderTopEndRadius: 20, borderTopStartRadius: 20, width: "100%", marginTop: -20,
                  backgroundColor: colors.background, alignItems: "center", padding: 15}}>
                     {!changePassword ? 
-                    <View style={{flex: 1}}>
+                    <View style={{flex: 1, width: "100%", alignItems: "center"}}>
                     <Button mode="outlined" style={[style.profileButton, {borderColor: colors.primary}]} onPress={() => {navigation.navigate("contact")}}>Contact Details</Button>
                     <Button mode="outlined" style={[style.profileButton, {borderColor: colors.primary, marginTop: 20}]} onPress={() => {
                         setChangePassword(true);
@@ -115,7 +120,7 @@ const mapDispatchToProps = dispatch => (
         padding: 10,
         width: "60%",
         borderRadius: 10,
-        borderWidth: 1
+        borderWidth: 1,
     }
   })
 

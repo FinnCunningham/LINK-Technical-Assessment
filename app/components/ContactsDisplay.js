@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import { Paragraph, useTheme, Button } from 'react-native-paper';
+import { Paragraph, useTheme, Button, IconButton } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { deleteContact } from '../controllers/Api';
 import {Swipeable} from 'react-native-gesture-handler';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 const displayPhoneNumbers = (phoneNumbers, navigation, contact) => {
     let items = [];
@@ -22,20 +23,23 @@ const getRandomColor = () => {
     return Math.floor(Math.random()*16777215).toString(16);
 }
 
-const rightAction = (token, id, setUpdateContacts, name) => {
-    // Update render
+const rightAction = (token, id, setUpdateContacts, name, colors) => {
     return(
-        <View style={{padding: 15}}>
-            <Button onPress={()=>{
+        <View style={{padding: 15}} key={"Delete button View"}>
+            <IconButton 
+            key={"Delete ICON button"}
+            style={{}}
+            icon={() => <Icon name="trash" size={25} color={colors.text}/>}
+            onPress={()=>{
                 deleteContact(token, id, name);
                 setUpdateContacts(true)
-            }}>Delete</Button>
+            }}></IconButton>
         </View>  
     )
 }
 
 const Item = ({ item, itemOnClick, index, showDetails, colors, contactColors, token, setUpdateContacts, name, localPhoneDisplay }) => (
-    <Swipeable renderRightActions={() => {return rightAction(token, item.id, setUpdateContacts, name, showDetails)}}>
+    <Swipeable renderRightActions={() => {return rightAction(token, item.id, setUpdateContacts, name, colors)}}>
         <TouchableOpacity style={{backgroundColor: colors.surface, marginTop: 10, width: "90%", alignSelf: "center", borderRadius: 10, minHeight: 50}}
         onPress={()=>itemOnClick(index)}>
             <View style={{flexDirection: "row"}}>
@@ -95,6 +99,7 @@ const ContactsDisplay = ({data, token, name, setUpdateContacts}) => {
             temp.push(getRandomColor());
         });
         setContactColors(temp);
+        
     }, [data])
 
     return(
@@ -102,10 +107,8 @@ const ContactsDisplay = ({data, token, name, setUpdateContacts}) => {
             <FlatList
                 data={data}
                 renderItem={renderItem}
-                keyExtractor={(item, index) => index}
-                
+                keyExtractor={(item, index) => index} 
             /> 
-            
         </View>
     )
 }

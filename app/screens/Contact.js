@@ -7,6 +7,7 @@ import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { getContacts } from '../controllers/Api';
 import ContactsDisplay from '../components/ContactsDisplay';
 import { setPage } from '../controllers/ReduxAction';
+import GloabalStyle from '../components/GloabalStyle';
 
 const Contact = ({token, setPage, name}) => {
     const { colors } = useTheme();
@@ -20,21 +21,35 @@ const Contact = ({token, setPage, name}) => {
     }, [])
 
     useEffect(()=>{
+        let isMounted = true;
         if(updateContacts){
-            getContacts(token, setContacts, name);
-            setUpdateContacts(false);
+            getContacts(token, name)
+            .then((data) =>{
+                if(isMounted){
+                    setContacts(data);
+                    setUpdateContacts(false);
+                }
+            })
         }
+        return ()=>{isMounted = false};
     }, [updateContacts])
 
     useEffect(()=>{
-        getContacts(token, setContacts, name)
+        let isMounted = true;
+        getContacts(token, name)
+        .then((data)=>{
+            if(isMounted){
+                setContacts(data);
+            }
+        })
+        return ()=>{isMounted = false};
     }, [isFocused])
 
 
     return( 
         <View style={{flex: 1, backgroundColor: colors.background}}>
             <View style={{flex: 1, justifyContent: "center", flexDirection: "column"}}>
-                <Button style={{alignSelf: "center", justifyContent: "center"}} onPress={()=>{
+                <Button mode="outlined" style={[GloabalStyle.button, {alignSelf: "center", justifyContent: "center", borderColor: colors.primary}]} onPress={()=>{
                     navigation.navigate("edit-contact", {type: "add", contact: {}})}
                 }>Add A New Contact</Button>
             </View>

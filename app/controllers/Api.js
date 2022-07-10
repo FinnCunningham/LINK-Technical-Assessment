@@ -6,13 +6,16 @@ const fetchFromAPI = (endUrl, data, callback) => {
     fetch(url, data)
     .then(response => {
         console.log(response.status)
+        
         if(response.status == 418){
             return {"error": response.status}
         }
-        if(response.status > 400 && response.status < 600){
+        if(response.status == 401){
+          return {"error": "Error: Make sure that the correct details have been entered!"}
+        }
+        else if(response.status > 400 && response.status < 600){
             return {"error": "Error: If the problem persists please contact support"};
         }
-        
         else if(response.status == 200 ){
             return response.json()
         }
@@ -28,6 +31,37 @@ const fetchFromAPI = (endUrl, data, callback) => {
         console.log(error)
         callback({"error": "Error: Please make sure that the input value is correct!"})
     })
+
+}
+
+const returnFetchFromAPI = (endUrl, data) => {
+  let url = baseURL + endUrl;
+  return fetch(url, data)
+  .then(response => {
+      console.log(response.status)
+      if(response.status == 418){
+          return {"error": response.status}
+      }
+      if(response.status > 400 && response.status < 600){
+          return {"error": "Error: If the problem persists please contact support"};
+      }
+      
+      else if(response.status == 200 ){
+          return response.json()
+      }
+      else{
+          return {"error": response.status};
+      }
+     
+  })
+  .then((data) => {
+      // console.log(data)
+      return data;
+    })
+  .catch((error) => {
+      console.log(error)
+      callback({"error": "Error: Please make sure that the input value is correct!"})
+  })
 
 }
 
@@ -95,7 +129,7 @@ const changePasswordValue = (token, oldPassword, newPassword, setResponse, name=
   fetchFromAPI(`/profile/changePassword?name=${name}`, data, callback)
 }
 
-const getContacts = (token, setContacts, name="user3@intrinsicgrouplimited.com") => {
+const getContacts = (token, name="user3@intrinsicgrouplimited.com") => {
     let data = {
         method: 'GET',
         headers: {
@@ -103,11 +137,7 @@ const getContacts = (token, setContacts, name="user3@intrinsicgrouplimited.com")
           "Authorization": `Bearer ${token}`
         }
       }
-    const callback = (data) => {
-        // console.log(data);
-        setContacts(data);
-    }
-    fetchFromAPI(`/contacts?name=${name}`, data, callback)
+    return returnFetchFromAPI(`/contacts?name=${name}`, data);
 }
 
 const addNewContact = (token, bodyData, name="user3@intrinsicgrouplimited.com") => {
